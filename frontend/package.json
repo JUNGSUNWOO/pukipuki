@@ -9,6 +9,7 @@
     "express": "^4.17.1",
     "livecam": "^0.2.0",
     "node-webcam": "^0.7.0",
+    "python-shell": "^2.0.3",
     "request": "^2.88.2"
   },
   "devDependencies": {},

@@ -20,17 +20,36 @@ app.get('/', function (req, res) {
             
         </style>
         <h1>Perfect Dancer</h1>
-        <input type="button" value="Music Search" onClick="location.href='/search'">
+        <form action="http://localhost:3000/link_process" method="get">
+        <p><input type="text" name="link" placeholder="youtube url"></p>
+        <p><input type="text" name="id" placeholder="video ID"></p>
+        <p>
+        <input type="submit">
+        </p>
+      </form>
     </body>
     </html>`;
 
     res.send(html);
 })
 
-app.get('/search', function (req, res) {
+app.get('/link_process', function (req, res) {
+    var link = req.query.link;
+    var id = req.query.id;
 
-    // document.domain = 'youtube.com';
-    // if (document.domain.toString().indexOf("youtube.com") != -1) document.domain="youtube.com";
+
+//     var ps = require('python-shell');
+//     var options = {
+//      mode: 'text',
+//      pythonPath:'',
+//      pythonOptions: ['-u'],
+//      scriptPath:'',
+//      args: ['url']};
+//     ps.PythonShell.run('test.py', options, function (err,results) { 
+//     if (err) throw err;
+//     //console.log('finished');
+//     console.log('results : ',results[0]);
+// });
 
 
     var html = `
@@ -38,15 +57,20 @@ app.get('/search', function (req, res) {
         <html lang="en">
         <head>
             <meta charset="UTF-8">
+            <meta http-equiv="refresh" content="5; url=http://localhost:3000/game"> //자동 페이지 넘기는 부분
             <title>Perfect Dancer</title>
         </head>
         <body>
-        <form action="http://localhost:3000/active" method="post">
-        <p><input type="text" name="link" placeholder="youtube url"></p>
-        <p>
-        <input type="submit">
-        </p>
-      </form>
+        <h1>로딩 중입니다 ...</h1>
+        <form id="sample_form" action="http://localhost:3000/game" method="get"> 
+        <input type="hidden" name="link" value="${link}">  
+        <input type="hidden" name="id" value="${id}">
+        </form> 
+        <script type="text/javascript"> 
+        setTimeout(function(){
+            this.document.getElementById("sample_form").submit();
+        }, 3000);
+        </script>
         </body>
     </html>
     `;
@@ -54,16 +78,16 @@ app.get('/search', function (req, res) {
     res.send(html);
 })
 
-app.post('/active', function (req, res) {
+app.get('/game', function (req, res) {
 
-    var id = req.body.link;
+    var link = req.query.link;
+    var id = req.query.id;
 
+    console.log(id);
     var html = `
     <!DOCTYPE html>
     <html>
         <style>
-        
-        
         .youtubevideowrapperdiv1-1 {
         position: relative;
         padding-bottom: 50%; /* 영상비율에 따른 수치 */
@@ -159,6 +183,11 @@ app.post('/active', function (req, res) {
             height: 300px;
             background-color: #666;
         }
+
+        .image{
+            width:350px;
+            margin-right:100px;
+        }
         </style>
 
         <!-- 유튜브 영상 리소스-->
@@ -185,25 +214,50 @@ app.post('/active', function (req, res) {
         <!--//제목 가리는 상단 div-->
         
         <!-- 제목 가리는 하단 div-->
-        <div style="
+        <div id="player" style="
         position: absolute;
         bottom: 0px;
         background-color: #F5F5F7;
         width: 100%;
-        height: 16.5%;
-        max-height: 120px;
+        height: 100%;
+        max-height: 80%;
         min-height: 53px;
         z-index: 99999;
         "></div>
+
+        <script src="http://www.youtube.com/player_api"></script>
+        <script type="text/javascript">
+        var player;
+        function onYouTubePlayerAPIReady() {
+            player = new YT.Player("player", {
+                width: "100%",
+                height: "100%",
+                videoId: "${id}",
+                events: {
+                    onReady: onPlayerReady,
+                    onStateChange: onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event){
+            event.target.playVideo();
+        }
+
+        function onPlayerStateChange(event) {
+            if(event.data === 0) {
+                window.location = "http://localhost:3000/game_process";
+            }
+        }
+        </script>
         <!--//제목 가리는 하단 div-->
-        
-        <iframe width="560" height="315" src="${id}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
             </div>  
             <div id="container">
-	<video autoplay="true" id="videoElement">
-	
-	</video>
+    <video autoplay="true" id="videoElement"></video>
+    <form id="sample_form" action="http://localhost:3000/game_process" method="get"> 
+            <input type="hidden" name="link" value="check">  
+    </form> 
 </div>
 <script>
     var video = document.querySelector("#videoElement");
@@ -220,11 +274,11 @@ app.post('/active', function (req, res) {
 </script>
         <div id="footer">
         <marquee direction="left" scrollamount="20" scrolldely="200" width="2000" height="290"> 
-        <img src="1.jpg">
-        <img src="2.jpg">
-        <img src="3.jpg">
-        <img src="4.jpg">
-        <img src="5.jpg">
+        <img class="image" src="1.jpg">
+        <img class="image" src="2.jpg">
+        <img class="image" src="3.jpg">
+        <img class="image" src="4.jpg">
+        <img class="image" src="5.jpg">
         </div>
     </html>
     `;
@@ -232,119 +286,44 @@ app.post('/active', function (req, res) {
     res.send(html);
 })
 
+
+app.get('/game_process', function (req, res) {
+    var html = `
+        <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="refresh" content="5; url=http://localhost:3000/finish">
+        <title>Perfect Dancer</title>
+    </head>
+    <body>
+    <h1>결과페이지 로딩중입니다.</h1>   
+    </body>
+    </html>
+    `;
+    res.send(html);
+});
+
 app.get('/finish', function (req, res) {
     var html = `
-    <style>
-    html, body {
-        margin: 0!important;
-        padding: 0!important;
-    }
-</style>
-
-<title>Video Recording | RecordRTC</title>
-<h1>Simple Video Recording using RecordRTC</h1>
-
-<br>
-
-<button id="btn-start-recording">Start Recording</button>
-<button id="btn-stop-recording" disabled>Stop Recording</button>
-
-<hr>
-<video controls autoplay playsinline></video>
-
-<script src="/RecordRTC.js"></script>
-<script>
-
-var video = document.querySelector('video');
-
-function captureCamera(callback) {
-    navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(function(camera) {
-        callback(camera);
-    }).catch(function(error) {
-        alert('Unable to capture your camera. Please check console logs.');
-        console.error(error);
-    });
-}
-
-function stopRecordingCallback() {
-    video.srcObject = null;
-
-    var blob = recorder.getBlob();
-    video.src = URL.createObjectURL(blob);
-
-    recorder.camera.stop();
-    recorder = null;
-}
-
-var recorder; // globally accessible
-
-document.getElementById('btn-start-recording').onclick = function() {
-    this.disabled = true;
-    captureCamera(function(camera) {
-        video.srcObject = camera;
-
-        recorder = RecordRTC(camera, {
-            recorderType: MediaStreamRecorder,
-            mimeType: 'video/webm',
-            timeSlice: 1000 // pass this parameter
-        });
-
-        (function looper() {
-            if(!recorder) {
-                return;
-            }
-
-            var internal = recorder.getInternalRecorder();
-            if(internal && internal.getArrayOfBlobs) {
-                var blob = new Blob(internal.getArrayOfBlobs(), {
-                    type: 'video/webm'
-                });
-
-                document.querySelector('h1').innerHTML = 'Recording length: ' + bytesToSize(blob.size);
-            }
-
-            setTimeout(looper, 1000);
-        })();
-
-        recorder.startRecording();
-
-        // release camera on stopRecording
-        recorder.camera = camera;
-
-        document.getElementById('btn-stop-recording').disabled = false;
-        document.getElementById('btn-pause-recording').disabled = false;
-    });
-};
-
-document.getElementById('btn-stop-recording').onclick = function() {
-    this.disabled = true;
-    recorder.stopRecording(stopRecordingCallback);
-};
-
-document.getElementById('btn-pause-recording').onclick = function() {
-    this.disabled = true;
-
-    if(this.innerHTML === 'Pause Recording') {
-        recorder.pauseRecording();
-        this.innerHTML = 'Resume Recording';
-    }
-    else {
-        recorder.resumeRecording();
-        this.innerHTML = 'Pause Recording';
-    }
-
-    setTimeout(function() {
-        document.getElementById('btn-pause-recording').disabled = false;
-    }, 2000);
-};
-
-</script>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Perfect Dancer</title>
+    </head>
+    <body>
+    <h1>결과보고서</h1> 
+    <div><img class="image" src="1.jpg"><img class="image" src="2.jpg"></div> 
+    <div><img class="image" src="1.jpg"></div>
+    <div><img class="image" src="2.jpg"></div> 
+    <div><img class="image" src="2.jpg"></div>
+    </body>
+    </html>
 `;
-
     res.send(html);
 })
 
-app.post('/process', function (req, res) {});
 app.listen(3000, function () {
     console.log('Listening...');
 })
