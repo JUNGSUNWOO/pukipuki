@@ -1,71 +1,65 @@
 <style>
-    html, body {
+    html, body, video, canvas {
         margin: 0!important;
         padding: 0!important;
     }
 </style>
 
-<title>Video Recording | RecordRTC</title>
-<h1>Simple Video Recording using RecordRTC</h1>
+<title>Using "bitsPerSecond" | RecordRTC</title>
+<h1>Using "bitsPerSecond"</h1>
 
-<br>
-
-<button id="btn-start-recording">Start Recording</button>
-<button id="btn-stop-recording" disabled>Stop Recording</button>
-
-<hr>
-<video controls autoplay playsinline></video>
+<video id="video-preview" controls autoplay playsinline></video>
 
 <script src="/RecordRTC.js"></script>
 <script>
-var video = document.querySelector('video');
+navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
 
-function captureCamera(callback) {
-    navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(function(camera) {
-        callback(camera);
-    }).catch(function(error) {
-        alert('Unable to capture your camera. Please check console logs.');
-        console.error(error);
-    });
-}
+var videoPreview = document.getElementById('video-preview');
 
-function stopRecordingCallback() {
-    video.src = video.srcObject = null;
-    video.muted = false;
-    video.volume = 1;
-    video.src = URL.createObjectURL(recorder.getBlob());
-    
-    recorder.camera.stop();
-    recorder.destroy();
-    recorder = null;
-}
-
-var recorder; // globally accessible
-
-document.getElementById('btn-start-recording').onclick = function() {
-    this.disabled = true;
-    captureCamera(function(camera) {
-        video.muted = true;
-        video.volume = 0;
-        video.srcObject = camera;
-
-        recorder = RecordRTC(camera, {
-            type: 'video'
-        });
-
-        recorder.startRecording();
-
-        // release camera on stopRecording
-        recorder.camera = camera;
-
-        document.getElementById('btn-stop-recording').disabled = false;
-    });
+var mediaHints = {
+    mandatory: {
+        minWidth: 640,
+        maxWidth: 640,
+        minHeight: 480,
+        maxHeight: 480,
+        minFrameRate: 30,
+        maxFrameRate: 30
+    },
+    optional: []
 };
 
-document.getElementById('btn-stop-recording').onclick = function() {
-    this.disabled = true;
-    recorder.stopRecording(stopRecordingCallback);
-};
+if(!!navigator.mozGetUserMedia) {
+    mediaHints = {
+        width: 640,
+        height: 480,
+        frameRate: 30
+    };
+}
+
+navigator.mediaDevices.getUserMedia({video: mediaHints, audio: true}).then(function(camera) {
+    var recorder = RecordRTC(camera, {
+        recorderType: MediaStreamRecorder,
+        mimeType: 'video/webm',
+        audioBitsPerSecond: 6000, // min: 100bps max: 6000bps
+        videoBitsPerSecond: -5000 // min: -5000bps max: 100000bps
+    });
+
+    recorder.setRecordingDuration(10 * 1000).onRecordingStopped(function() {
+        var blob = recorder.getBlob();
+        recorder = null;
+        camera.stop();
+
+        videoPreview.srcObject = null;
+        videoPreview.src = URL.createObjectURL(blob);
+    });
+
+    recorder.startRecording();
+
+    videoPreview.srcObject = camera;
+}).catch(function(error) {
+    alert('Unable to capture camera. Please check console logs.');
+    console.error(error);
+});
 </script>
 
 <footer style="margin-top: 20px;"><small id="send-message"></small></footer>
