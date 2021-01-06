@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas id="myChart" width="400" height="400"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script src="https://cdn.jsdelivr.net/gh/emn178/chartjs-plugin-labels/src/chartjs-plugin-labels.js"></script>
+<script>
+
+<canvas id="myChart" width="400" height="400"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script src="https://cdn.jsdelivr.net/gh/emn178/chartjs-plugin-labels/src/chartjs-plugin-labels.js"></script>
+<script>
+var ctx = document.getElementById('myChart');
+var data = {
+    labels: ['59m²', '84m²', '115m²', '117m²', '135m²', '136m²', '168m²', '169m²', '198m²', '222m²'],
+    datasets: [{
+        label: '# of household',
+        data: [512, 955, 56, 74, 182, 28, 109, 122, 224, 182],
+        backgroundColor: [
+            'rgba(255, 99, 132, 0.2)',
+            'rgba(54, 162, 235, 0.2)',
+            'rgba(255, 206, 86, 0.2)',
+            'rgba(75, 192, 192, 0.2)',
+            'rgba(153, 102, 255, 0.2)',
+            'rgba(255, 159, 64, 0.2)',
+        ],
+        borderColor: [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1
+    }]
+};
+
+var myChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: data,
+    options: {
+        title: {
+            display: true,
+            text: '면적별 세대수',
+            position: 'top',
+            fontSize: 40,
+            fontColor: '#000'
+        },
+        plugins: {
+            labels: [
+                {
+                    render: function (options) {
+                        var value = options.value;
+                        return value + "세대";
+                    },
+                    fontSize: 30,
+                    fontStyle: 'bold',
+                    fontColor: '#000',
+                    position: 'outside',
+                    outsidePadding: 40,
+                    textMargin: 10
+                },
+                {
+                    render: 'label',
+                    fontSize: 30,
+                    fontStyle: 'bold',
+                    fontColor: '#000'
+                }
+            ]
+        }
+    }
+});
+</script>
+</body>
+</html>
